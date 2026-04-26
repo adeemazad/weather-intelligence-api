@@ -76,6 +76,6 @@ Visit `http://localhost:8000/docs` for interactive documentation.
 
 ## Author
 
-**Adeem Azad**
-BEng Mechatronics, University of Glasgow
+**Adeem Azad**  
+BEng Mechatronics, University of Glasgow   
 [LinkedIn](https://www.linkedin.com/in/adeem-azad)
