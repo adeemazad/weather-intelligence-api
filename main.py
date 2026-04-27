@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 import requests
 import os
 from dotenv import load_dotenv
@@ -10,11 +11,24 @@ load_dotenv()
 app = FastAPI(
     title="Weather Intelligence API",
     description="""
-    A real-time weather intelligence API that provides weather data,
-    heat index calculations, safety recommendations, and travel advisories
-    for any city worldwide.
-    
-    Built by Adeem Azad — github.com/adeemazad
+    ## Real-time weather intelligence for any city worldwide.
+
+    This API provides current weather conditions, heat index calculations,
+    safety recommendations, travel advisories, and multi-city comparisons.
+
+    ### Main Features
+    - Real-time weather data
+    - Heat index calculation
+    - Safety risk assessment
+    - Travel advisory generation
+    - Multi-city weather comparison
+
+    ### Example Requests
+    - `/weather/London`
+    - `/weather/Glasgow`
+    - `/compare?cities=London,Paris,Tokyo`
+
+    Built by Adeem Azad.
     """,
     version="1.0.0"
 )
@@ -98,23 +112,169 @@ def get_travel_advisory(visibility: float,
     return "CLEAR — Good conditions for travel"
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {
-        "message": "Weather Intelligence API",
-        "version": "1.0.0",
-        "author": "Adeem Azad",
-        "github": "github.com/adeemazad",
-        "endpoints": {
-            "weather": "/weather/{city}",
-            "compare": "/compare?cities=London,Paris,Tokyo",
-            "health": "/health",
-            "docs": "/docs"
-        }
-    }
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Weather Intelligence API</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #1e3c72, #2a5298);
+                color: #ffffff;
+            }
+
+            .container {
+                max-width: 950px;
+                margin: 0 auto;
+                padding: 50px 20px;
+            }
+
+            .card {
+                background: rgba(255, 255, 255, 0.12);
+                border-radius: 20px;
+                padding: 35px;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(8px);
+            }
+
+            h1 {
+                font-size: 42px;
+                margin-bottom: 10px;
+            }
+
+            h2 {
+                margin-top: 35px;
+                color: #dbeafe;
+            }
+
+            p {
+                font-size: 18px;
+                line-height: 1.6;
+            }
+
+            .badge {
+                display: inline-block;
+                background: #22c55e;
+                color: #052e16;
+                padding: 8px 14px;
+                border-radius: 999px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+
+            .endpoints {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 15px;
+                margin-top: 20px;
+            }
+
+            .endpoint {
+                background: rgba(255, 255, 255, 0.14);
+                padding: 18px;
+                border-radius: 14px;
+            }
+
+            code {
+                display: inline-block;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 6px 8px;
+                border-radius: 8px;
+                color: #fef3c7;
+            }
+
+            a {
+                color: #bfdbfe;
+                font-weight: bold;
+                text-decoration: none;
+            }
+
+            a:hover {
+                text-decoration: underline;
+            }
+
+            .footer {
+                margin-top: 35px;
+                font-size: 14px;
+                opacity: 0.85;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="card">
+                <span class="badge">Live API</span>
+
+                <h1>Weather Intelligence API</h1>
+
+                <p>
+                    A real-time weather intelligence API that provides current weather,
+                    safety recommendations, heat index calculations, and travel advisories
+                    for cities worldwide.
+                </p>
+
+                <h2>Available Endpoints</h2>
+
+                <div class="endpoints">
+                    <div class="endpoint">
+                        <strong>API Homepage</strong><br>
+                        <code>GET /</code>
+                    </div>
+
+                    <div class="endpoint">
+                        <strong>Weather by City</strong><br>
+                        <code>GET /weather/London</code>
+                    </div>
+
+                    <div class="endpoint">
+                        <strong>Compare Cities</strong><br>
+                        <code>GET /compare?cities=London,Paris,Tokyo</code>
+                    </div>
+
+                    <div class="endpoint">
+                        <strong>Health Check</strong><br>
+                        <code>GET /health</code>
+                    </div>
+
+                    <div class="endpoint">
+                        <strong>Interactive Docs</strong><br>
+                        <code>GET /docs</code>
+                    </div>
+                </div>
+
+                <h2>Try It Now</h2>
+
+                <p>
+                    <a href="/weather/London">Check London Weather</a><br>
+                    <a href="/compare?cities=London,Paris,Tokyo">Compare London, Paris, and Tokyo</a><br>
+                    <a href="/docs">Open Interactive API Docs</a>
+                </p>
+
+                <h2>Built With</h2>
+
+                <p>
+                    Python, FastAPI, OpenWeatherMap API, and Railway.
+                </p>
+
+                <div class="footer">
+                    Built by Adeem Azad | Version 1.0.0
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    summary="Health check",
+    description="Checks whether the API is running successfully."
+)
 def health_check():
     return {
         "status": "healthy",
@@ -122,7 +282,11 @@ def health_check():
     }
 
 
-@app.get("/weather/{city}")
+@app.get(
+    "/weather/{city}",
+    summary="Get weather intelligence for a city",
+    description="Returns real-time weather data, heat index, safety recommendations, and travel advisory for a given city."
+)
 def get_weather(city: str):
     """
     Get comprehensive weather intelligence for any city.
@@ -191,7 +355,11 @@ def get_weather(city: str):
     }
 
 
-@app.get("/compare")
+@app.get(
+    "/compare",
+    summary="Compare weather across multiple cities",
+    description="Compares weather conditions for 2 to 5 cities and sorts them by temperature."
+)
 def compare_cities(cities: str):
     """
     Compare weather conditions across multiple cities.
@@ -239,3 +407,167 @@ def compare_cities(cities: str):
         "coolest": results[-1].get("city") if results else None,
         "timestamp": datetime.utcnow().isoformat()
     }
+@app.get("/view/{city}", response_class=HTMLResponse)
+def view_weather(city: str):
+    weather = get_weather(city)
+
+    conditions = weather["current_conditions"]
+    intelligence = weather["intelligence"]
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Weather in {weather["city"]}</title>
+        <style>
+            body {{
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #0f172a, #2563eb);
+                color: white;
+            }}
+
+            .container {{
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 50px 20px;
+            }}
+
+            .card {{
+                background: rgba(255, 255, 255, 0.12);
+                border-radius: 22px;
+                padding: 35px;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(8px);
+            }}
+
+            h1 {{
+                font-size: 42px;
+                margin-bottom: 5px;
+            }}
+
+            .temperature {{
+                font-size: 70px;
+                font-weight: bold;
+                margin: 25px 0 5px;
+            }}
+
+            .description {{
+                font-size: 24px;
+                text-transform: capitalize;
+                opacity: 0.9;
+            }}
+
+            .grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 15px;
+                margin-top: 30px;
+            }}
+
+            .box {{
+                background: rgba(255, 255, 255, 0.14);
+                padding: 18px;
+                border-radius: 16px;
+            }}
+
+            .label {{
+                font-size: 14px;
+                opacity: 0.75;
+            }}
+
+            .value {{
+                font-size: 22px;
+                font-weight: bold;
+                margin-top: 6px;
+            }}
+
+            .risk {{
+                display: inline-block;
+                margin-top: 25px;
+                padding: 10px 16px;
+                border-radius: 999px;
+                background: #22c55e;
+                color: #052e16;
+                font-weight: bold;
+            }}
+
+            ul {{
+                line-height: 1.8;
+            }}
+
+            a {{
+                color: #bfdbfe;
+                font-weight: bold;
+                text-decoration: none;
+            }}
+
+            a:hover {{
+                text-decoration: underline;
+            }}
+
+            .footer {{
+                margin-top: 30px;
+                opacity: 0.85;
+            }}
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="card">
+                <h1>{weather["city"]}, {weather["country"]}</h1>
+                <div class="description">{conditions["description"]}</div>
+
+                <div class="temperature">{conditions["temperature_c"]}°C</div>
+                <div>Feels like {conditions["feels_like_c"]}°C</div>
+
+                <div class="risk">Risk Level: {intelligence["risk_level"]}</div>
+
+                <div class="grid">
+                    <div class="box">
+                        <div class="label">Humidity</div>
+                        <div class="value">{conditions["humidity_percent"]}%</div>
+                    </div>
+
+                    <div class="box">
+                        <div class="label">Wind Speed</div>
+                        <div class="value">{conditions["wind_speed_ms"]} m/s</div>
+                    </div>
+
+                    <div class="box">
+                        <div class="label">Pressure</div>
+                        <div class="value">{conditions["pressure_hpa"]} hPa</div>
+                    </div>
+
+                    <div class="box">
+                        <div class="label">Visibility</div>
+                        <div class="value">{conditions["visibility_m"]} m</div>
+                    </div>
+
+                    <div class="box">
+                        <div class="label">Heat Index</div>
+                        <div class="value">{conditions["heat_index_c"]}°C</div>
+                    </div>
+
+                    <div class="box">
+                        <div class="label">Travel Advisory</div>
+                        <div class="value">{intelligence["travel_advisory"]}</div>
+                    </div>
+                </div>
+
+                <h2>Safety Recommendations</h2>
+                <ul>
+                    {"".join([f"<li>{item}</li>" for item in intelligence["safety_recommendations"]])}
+                </ul>
+
+                <div class="footer">
+                    <a href="/">Back to homepage</a> |
+                    <a href="/weather/{city}">View raw JSON</a> |
+                    <a href="/docs">API docs</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
