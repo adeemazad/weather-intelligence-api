@@ -6,7 +6,7 @@ with Docker, and deployed on Railway.
 
 ## Live API
 
-**Base URL:** `https://weather-intelligence-api.up.railway.app/weather/{city}`
+**Base URL:** `https://weather-intelligence-api.up.railway.app`
 
 | Endpoint | Description |
 |---|---|
